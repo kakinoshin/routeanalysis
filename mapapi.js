@@ -2,14 +2,17 @@ var directionsDisplay;
 var directionsService = new google.maps.DirectionsService();
 var map;
 var currentRoutePointList;
+var currentList;
+var marker;
 
-function PointData(lat, lng, alt, dist, angle)
+function PointData(lat, lng, alt, dist, angle, total)
 {
   this.lat = lat;
   this.lng = lng;
   this.alt = alt;
   this.dist = dist;
   this.angle = angle;
+  this.total = total;
 }
 
 function initialize()
@@ -27,8 +30,13 @@ function initialize()
   currentRoutePointList = null;
 
   map = new google.maps.Map(document.getElementById("map_canvas"), opts);
-  directionsDisplay.setMap(map);
 
+  marker = new google.maps.Marker({
+    position: latlng,
+    map: map
+  });
+
+  directionsDisplay.setMap(map);
 /*
   google.maps.event.addListener(
     directionsDisplay,
@@ -142,7 +150,7 @@ function analysis(elvs)
   var maxClimbAlt = 0.0;
   var maxClimbDistance = 0.0;
 
-  var points = [];
+  currentList = [];
 
   if(currentRoutePointList != null && currentRoutePointList.length > 1 && currentRoutePointList.length == elvs.length)
   {
@@ -153,7 +161,7 @@ function analysis(elvs)
 
     for(var i=0; i<elvs.length; i++)
     {
-      var p = new PointData(0,0,0,0,0);
+      var p = new PointData(0,0,0,0,0,0);
       var point = currentRoutePointList[i];
       var elv = elvs[i];
 
@@ -163,13 +171,15 @@ function analysis(elvs)
         var angle = 100 * (elv - prevElv) / distance;
         createTableRecord(i, point, elv, distance, angle);
 
-        // store for graph
-        p.dist = distance;
-        p.angle = angle;
-
         // analysis
         total += distance;
 
+        // store for graph
+        p.dist = distance;
+        p.angle = angle;
+        p.total = total;
+
+        // analysis
         if(maxAngle < angle)
         {
           maxAngle = angle;
@@ -215,11 +225,11 @@ function analysis(elvs)
       prevElv = elv;
 
       // store for graph
-      p.lat = point.lat;
-      p.lng = point.lng;
+      p.lat = point.lat();
+      p.lng = point.lng();
       p.alt = elv;
 
-      points.push(p);
+      currentList.push(p);
     }
 
     // results
@@ -229,7 +239,7 @@ function analysis(elvs)
     createAnalysisTableRecord("最高角度最長傾斜距離（調整中)", String(myRound(maxClimbDistance / 1000, 2)) + " km (" + String(myRound(maxClimbDistance, 2)) + " m)");
     createAnalysisTableRecord("最高角度最長傾斜度（調整中)", String(myRound(100 * maxClimbAlt / maxClimbDistance, 2)) + " %");
 
-    createGraph(points);
+    createGraph(currentList);
   }
   else
   {
@@ -259,6 +269,23 @@ function createGraph(datalist)
 
     var container = document.getElementById("graph_canvas");
     var g = new Dygraph(container, $csv);
+    
+    g.updateOptions( {
+      pointClickCallback: function(event, p) {
+        if(currentList)
+        {
+          currentList.forEach(function(point){
+            if(myRound(point.total, 2) == p.xval)
+            {
+              map.panTo(new google.maps.LatLng(point.lat, point.lng));
+              marker.setOptions({
+                position: new google.maps.LatLng(point.lat, point.lng)
+              });
+            }
+          })
+        }
+      }    
+    }); 
   }
 }
 
