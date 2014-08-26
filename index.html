@@ -1,0 +1,74 @@
+<!DOCTYPE html "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>ルート解析支援</title>
+
+    <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCej51lmyumBRQTGxRQenkvWGF30Ll9lmc&sensor=false&language=ja">
+    </script>
+    <script type="text/javascript" src="dygraph-combined.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="mapapi.js"></script>
+
+    <style type="text/css">
+    <!-- 
+    .analysis {
+      border-collapse: collapse; /* 枠線の表示方法 */
+      padding: 5px; /* セル内の余白 */
+      border: 2px #1C79C6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
+    }
+
+    .analysis TH {
+      border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
+      padding: 5px; /* セル内の余白 */
+      background-color: #14bae3;
+    }
+
+    .analysis TD {
+      border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
+      padding: 5px; /* セル内の余白 */
+      background-color: #cdefef;
+    }
+
+    .tbl {
+      border-collapse: collapse; /* 枠線の表示方法 */
+      padding: 5px; /* セル内の余白 */
+      border: 2px #1C79C6 solid; /* テーブル全体の枠線（太さ・色・スタイル） */
+    }
+
+    .tbl TH {
+      border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
+      padding: 5px; /* セル内の余白 */
+      background-color: #14bae3;
+    }
+
+    .tbl TD {
+      border: 1px #1C79C6 solid; /* セルの枠線（太さ・色・スタイル） */
+      padding: 5px; /* セル内の余白 */
+      background-color: #cdefef;
+    }
+    -->
+    </style>
+  </head>
+  <body onload="initialize()">
+    <p>ルートの設定</p>
+
+    start point : <input type="text" id="start" value="Tokyo skytree"/><br/>
+    end   point : <input type="text" id="end" value="Senso-ji Temple"/>
+    <input type="button" value="search" onClick="calcRoute()">
+
+    <div id="map_canvas" style="width:500px; height:300px"></div>
+
+    <div id="graph_canvas"></div>
+
+    <table class="analysis">
+      <tbody />
+    </table>
+
+    <table class="tbl">
+      <tbody />
+    </table>
+  </body>
+</html>
