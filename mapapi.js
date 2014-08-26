@@ -3,6 +3,15 @@ var directionsService = new google.maps.DirectionsService();
 var map;
 var currentRoutePointList;
 
+function PointData(lat, lng, alt, dist, angle)
+{
+  this.lat = lat;
+  this.lng = lng;
+  this.alt = alt;
+  this.dist = dist;
+  this.angle = angle;
+}
+
 function initialize()
 {
   directionsDisplay = new google.maps.DirectionsRenderer();
@@ -133,6 +142,8 @@ function analysis(elvs)
   var maxClimbAlt = 0.0;
   var maxClimbDistance = 0.0;
 
+  var points = [];
+
   if(currentRoutePointList != null && currentRoutePointList.length > 1 && currentRoutePointList.length == elvs.length)
   {
     var previous = null;
@@ -142,6 +153,7 @@ function analysis(elvs)
 
     for(var i=0; i<elvs.length; i++)
     {
+      var p = new PointData(0,0,0,0,0);
       var point = currentRoutePointList[i];
       var elv = elvs[i];
 
@@ -150,6 +162,10 @@ function analysis(elvs)
         var distance = calcDistance(previous, point);
         var angle = 100 * (elv - prevElv) / distance;
         createTableRecord(i, point, elv, distance, angle);
+
+        // store for graph
+        p.dist = distance;
+        p.angle = angle;
 
         // analysis
         total += distance;
@@ -197,6 +213,13 @@ function analysis(elvs)
       
       previous = point;
       prevElv = elv;
+
+      // store for graph
+      p.lat = point.lat;
+      p.lng = point.lng;
+      p.alt = elv;
+
+      points.push(p);
     }
 
     // results
@@ -206,7 +229,7 @@ function analysis(elvs)
     createAnalysisTableRecord("最高角度最長傾斜距離（調整中)", String(myRound(maxClimbDistance / 1000, 2)) + " km (" + String(myRound(maxClimbDistance, 2)) + " m)");
     createAnalysisTableRecord("最高角度最長傾斜度（調整中)", String(myRound(100 * maxClimbAlt / maxClimbDistance, 2)) + " %");
 
-    createGraph(elvs);
+    createGraph(points);
   }
   else
   {
@@ -227,11 +250,12 @@ function createGraph(datalist)
 {
   if(datalist != null)
   {
-    var $csv = "No,傾斜率(%)\n";
-    for(var i=0; i<datalist.length; i++)
-    {
-      $csv += String(i) + "," + String(myRound(datalist[i], 2)) + "\n";
-    }
+    var $csv = "距離,高度(m),傾斜率(%)\n";
+    var totalDist = 0;
+    datalist.forEach(function(point){
+      totalDist += point.dist;
+      $csv += String(myRound(totalDist, 2)) + "," + String(myRound(point.alt, 2)) + "," + String(myRound(point.angle, 2)) + "\n";
+    })
 
     var container = document.getElementById("graph_canvas");
     var g = new Dygraph(container, $csv);
